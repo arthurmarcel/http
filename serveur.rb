@@ -1,8 +1,10 @@
 require 'socket'
-port = 8080
+
+port = 8181
 server = TCPServer.open(port)
 process_number = 1
 trap('EXIT'){ server.close }
+
 process_number.times do
   fork do
     trap('INT'){ exit }
@@ -13,7 +15,7 @@ process_number.times do
       #request parsing
       firstLine = socket.gets
       if firstLine.nil?
-next
+				next
       end
       tab = firstLine.split(' ')
       
@@ -25,33 +27,35 @@ next
       getParams = {}
       tab = res.split('?')
       if not tab[1].nil?
-getLine = tab[1]
-tab = getLine.split('&')
-tab.each do |e|
-name, value = e.split('=')
-getParams[name] = value
-end
+				getLine = tab[1]
+				tab = getLine.split('&')
+			
+				tab.each do |e|
+					name, value = e.split('=')
+					getParams[name] = value
+				end
       end
       
       headers = {}
       while not (line = socket.gets).strip.empty? do
-name, value = line.split(':')
-headers[name.strip] = value.strip
+				name, value = line.split(':')
+				headers[name.strip] = value.strip
       end
       
       postLine = "vide"
       postParams = {}
       if ope=="POST" and not headers["Content-Length"].nil?
-length = headers["Content-Length"].to_i
-data = socket.read(length)
-if data.is_a?(String)
-postLine = data
-tab = postLine.split('&')
-tab.each do |e|
-name, value = e.split('=')
-postParams[name] = value
-end
-end
+				length = headers["Content-Length"].to_i
+				data = socket.read(length)
+				if data.is_a?(String)
+					postLine = data
+					tab = postLine.split('&')
+					
+					tab.each do |e|
+						name, value = e.split('=')
+						postParams[name] = value
+					end
+				end
       end
       
       #response
@@ -61,28 +65,29 @@ end
       html += "<li>Version: "+ver+"</li>"
       
       headers.each do |key, value|
-html += "<li>"+key+": "+value+"</li>"
+				html += "<li>"+key+": "+value+"</li>"
       end
       
       html += "<li>Get-Line: "+getLine+"</li>"
       if not getParams.empty?
-html += "<ul>"
-getParams.each do |key, value|
-value = "nil" unless not value.nil?
-html += "<li>"+key+": "+value+"</li>"
-end
-html += "</ul>"
-end
+				html += "<ul>"
+				
+				getParams.each do |key, value|
+					value = "nil" unless not value.nil?
+					html += "<li>"+key+": "+value+"</li>"
+				end
+				html += "</ul>"
+			end
       
       html += "<li>Post-Line: "+postLine+"</li>"
       if not postParams.empty?
-html += "<ul>"
-postParams.each do |key, value|
-value = "nil" unless not value.nil?
-html += "<li>"+key+": "+value+"</li>"
-end
-html += "</ul>"
-end
+				html += "<ul>"
+				postParams.each do |key, value|
+					value = "nil" unless not value.nil?
+					html += "<li>"+key+": "+value+"</li>"
+				end
+				html += "</ul>"
+			end
       
       html += "</ul>"
       
